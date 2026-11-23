@@ -74,14 +74,20 @@ install_containerd() {
     sudo apt-get update -y
     sudo apt-get install -y ca-certificates curl gpg apt-transport-https
 
-    # Docker repo provides the containerd.io package
     sudo install -m 0755 -d /etc/apt/keyrings
+
     curl -fsSL https://download.docker.com/linux/ubuntu/gpg \
+        | sudo gpg --dearmor --batch --yes -o /etc/apt/keyrings/docker.gpg
+
+    sudo chmod a+r /etc/apt/keyrings/docker.gpg
+
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" \
+        | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
     sudo apt-get update -y
     sudo apt-get install -y containerd.io
-    sudo systemctl enable containerd
+    sudo systemctl enable --now containerd
 }
-
 
 # ------------------------------------------------------------------------------
 #  Step 3 : Install kubeadm, kubelet, kubectl
